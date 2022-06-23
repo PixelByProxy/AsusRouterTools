@@ -8,16 +8,32 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    
+    env:
+      BUILD_CONFIGURATION: 'Release'
 
     steps:
     - uses: actions/checkout@v3
+    
+    - name: Generate Build Number
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{secrets.github_token}}    
+        
+    - name: Print Build Number
+      run: echo "Build number is $BUILD_NUMBER"
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
       with:
         dotnet-version: 6.0.x
+        
     - name: Restore Dependencies
       run: dotnet restore
+      
     - name: Build
       run: dotnet build --no-restore
+      
     - name: Test
       run: dotnet test --no-build --verbosity normal
+      
