@@ -11,7 +11,7 @@ jobs:
     
     env:
       BUILD_CONFIGURATION: 'Release'
-      VERSION: '1.0.$GITHUB_RUN_NUMBER'
+      VERSION: '1.0.${{github.run_number}}'
 
     steps:
     - uses: actions/checkout@v3
