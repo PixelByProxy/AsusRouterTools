@@ -35,3 +35,9 @@ jobs:
       
     - name: Nuget Pack
       run: dotnet pack --no-build -p:Version=$VERSION --configuration $BUILD_CONFIGURATION --output "${{github.workspace}}/package/" "./Lib/PixelByProxy.Asus.Router.csproj"
+    
+    - name: Create Artifact
+    - uses: actions/upload-artifact@v2
+      with:
+        name: PixelbyProxy.Asus.Router.$VERSION-preview
+        path: "${{github.workspace}}/package/"
