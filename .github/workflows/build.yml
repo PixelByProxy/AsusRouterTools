@@ -20,7 +20,7 @@ jobs:
       uses: einaregilsson/build-number@v3
       with:
         token: ${{secrets.github_token}}
-        prefix: $VERSION
+        prefix: ${{env.VERSION}}
         
     - name: Print Build Number
       run: echo "Build number is $BUILD_NUMBER"
@@ -34,7 +34,7 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
       
     - name: Test
       run: dotnet test --no-build --verbosity normal
