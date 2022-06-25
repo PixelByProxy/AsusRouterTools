@@ -17,5 +17,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifact_name: NugetPreRelease
 
+      - name: Dir Change
+        run: cd NugetPreRelease
+        
       - name: Display Files
         run: ls -R
