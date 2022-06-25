@@ -23,8 +23,5 @@ jobs:
         with:
           args: unzip -qq nuget.zip -d packages
 
-      - name: Dir
-        run: cd packages
-
       - name: Display Files
         run: ls -R
