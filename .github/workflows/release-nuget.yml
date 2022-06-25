@@ -4,15 +4,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  release:
 
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v3
       
-      - name: Artifact downloader
+      - name: Download Nuget
         uses: bettermarks/action-artifact-download@0.3.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          artifact_name: Nuget
+          artifact_name: NugetPreRelease
+
+      - name: Display Files
+        run: ls -R

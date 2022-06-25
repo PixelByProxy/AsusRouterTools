@@ -1,4 +1,4 @@
-name: Build
+name: Build Nuget
 
 on:
   push:
@@ -39,5 +39,5 @@ jobs:
     - name: Create Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: Nuget
+        name: NugetPreRelease
         path: "${{github.workspace}}/package/"
