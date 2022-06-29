@@ -14,7 +14,7 @@ jobs:
       - name: Download Artifact
         uses: bettermarks/action-artifact-download@0.3.0
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{secrets.GITHUB_TOKEN}}
           artifact_name: NugetPreRelease
           rename: nuget.zip
 
@@ -25,3 +25,9 @@ jobs:
 
       - name: Display Files
         run: ls -R
+
+      - name: Nuget.org Push Packages
+        run: nuget push "packages/*.nupkg" --apk-key ${{secrets.NUGET_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+
+      - name: Github Push Packages
+        run: nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source "github" --skip-duplicate
