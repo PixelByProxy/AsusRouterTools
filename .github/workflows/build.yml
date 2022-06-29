@@ -2,7 +2,7 @@ name: Build Nuget
 
 on:
   push:
-    branches: [ "build-workflow-1" ]
+    branches: [ "main" ]
 
 jobs:
   build:
