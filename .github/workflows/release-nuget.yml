@@ -1,50 +1,33 @@
-# This is a basic workflow to help you get started with Actions
+name: Release Nuget
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  release:
+
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
       
-
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
-
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-      
-      - name: Artifact downloader
-        # You may pin to the exact commit or the version.
-        # uses: bettermarks/action-artifact-download@0e42fda9b6145176148874b572a0341791cc360f
+      - name: Download Artifact
         uses: bettermarks/action-artifact-download@0.3.0
         with:
-          token: # optional
-          # The name of the artifact
-          artifact_name: # optional
-          # An alternative name for the downloaded artifact
-          rename: # optional
-          # Wait for the artifact to appear
-          wait_seconds: # optiona
+          token: ${{secrets.GITHUB_TOKEN}}
+          artifact_name: NugetPreRelease
+          rename: nuget.zip
+
+      - name: Extract Nuget
+        uses: montudor/action-zip@v1
+        with:
+          args: unzip -qq nuget.zip -d packages
+
+      - name: Display Files
+        run: ls -R
+
+      - name: Nuget.org Push Packages
+        run: nuget push "packages/*.nupkg" --apk-key ${{secrets.NUGET_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+
+      - name: Github Push Packages
+        run: nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source "github" --skip-duplicate

@@ -2,14 +2,10 @@
 
 A class to access functionality from your Asus router.
 
-## Credits
-
-This work is based on the [AsusRouterMonitor](https://github.com/lmeulen/AsusRouterMonitor) python library by [Leo van der Meulen](https://github.com/lmeulen) re-written in C#.
-
 ## Usage
 
 ```csharp
-var settings = new AsusConfiguration
+var config = new AsusConfiguration
 {
     HostName = "router.asus.com",
     UserName = userName,
@@ -17,7 +13,7 @@ var settings = new AsusConfiguration
 };
 
 var httpClient = new HttpClient();
-var service = new AsusService(settings, httpClient);
+var service = new AsusService(config, httpClient);
 var clients = await service.GetClientsAsync();
 
 Console.WriteLine($"Clients: {clients.Count}");
@@ -36,3 +32,7 @@ GetRouterSettingsAsync   - Gets various router settings.
 GetLanStatusAsync        - Gets LAN status information.
 GetDhcpLeaseMacListAsync - Gets a list of DHCP leases given out.
 ```
+
+## Credits
+
+This work is based on the [AsusRouterMonitor](https://github.com/lmeulen/AsusRouterMonitor) python library by [Leo van der Meulen](https://github.com/lmeulen) re-written in C#.

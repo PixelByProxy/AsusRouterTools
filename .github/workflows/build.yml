@@ -1,4 +1,4 @@
-name: Build
+name: Build Nuget
 
 on:
   push:
@@ -11,19 +11,13 @@ jobs:
     
     env:
       BUILD_CONFIGURATION: 'Release'
-      VERSION: '1.0'
+      VERSION: '1.0.${{github.run_number}}'
 
     steps:
     - uses: actions/checkout@v3
-    
-    - name: Generate Build Number
-      id: ${{env.VERSION}}
-      uses: einaregilsson/build-number@v3
-      with:
-        token: ${{secrets.github_token}}
         
     - name: Print Build Number
-      run: echo "Build number is $BUILD_NUMBER"
+      run: echo "Build number is $VERSION"
       
     - name: Setup .NET
       uses: actions/setup-dotnet@v2
@@ -34,10 +28,16 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore --configuration $BUILD_CONFIGURATION
       
     - name: Test
       run: dotnet test --no-build --verbosity normal
       
     - name: Nuget Pack
-      run: dotnet pack --no-build -p:Version=$BUILD_NUMBER --configuration ${{env.BUILD_CONFIGURATION}} --output "${{github.workspace}}/package/" "./Lib/PixelByProxy.Asus.Router.csproj"
+      run: dotnet pack --no-build -p:Version=$VERSION --configuration $BUILD_CONFIGURATION --output "${{github.workspace}}/package/" "./Lib/PixelByProxy.Asus.Router.csproj"
+    
+    - name: Create Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: NugetPreRelease
+        path: "${{github.workspace}}/package/"
