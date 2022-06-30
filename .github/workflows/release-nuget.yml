@@ -27,7 +27,7 @@ jobs:
         run: ls -R
 
       - name: Nuget.org Push Packages
-        run: nuget push "packages/*.nupkg" --apk-key ${{secrets.NUGET_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.NUGET_KEY}} -Source "https://api.nuget.org/v3/index.json" -SkipDuplicate
 
       - name: Github Push Packages
-        run: nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source "github" --skip-duplicate
+        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.GITHUB_TOKEN}} -Source "github" -SkipDuplicate
