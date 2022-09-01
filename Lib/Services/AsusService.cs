@@ -249,6 +249,47 @@ namespace PixelByProxy.Asus.Router.Services
             return list ?? new List<List<string>>();
         }
 
+        /// <inheritdoc />
+        public async Task<List<WebHistory>> GetWebHistory(string? clientMac = null, int page = 1, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrEmpty(clientMac))
+                clientMac = "all";
+
+            if (page <= 0)
+                page = 1;
+
+            var response = await GetResponseAsync($"/getWebHistory.asp?client={clientMac}&page={page}", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
+
+            var webHistory = new List<WebHistory>();
+
+            var jsonStart = response.IndexOf('[', StringComparison.Ordinal);
+            if (jsonStart > -1)
+            {
+                var json = response[jsonStart..].Trim().TrimEnd(';');
+                var entries = JsonConvert.DeserializeObject<List<List<string>>>(json);
+
+                if (entries != null)
+                {
+                    foreach (var entry in entries)
+                    {
+                        if (entry.Count < 3)
+                            continue;
+
+                        var history = new WebHistory
+                        {
+                            Mac = entry[0],
+                            AccessTime = ParseUnixTime(entry[1]),
+                            Domain = entry[2]
+                        };
+
+                        webHistory.Add(history);
+                    }
+                }
+            }
+
+            return webHistory;
+        }
+
         #endregion
 
         #region Private Methods
@@ -316,6 +357,16 @@ namespace PixelByProxy.Asus.Router.Services
             }
 
             return content;
+        }
+
+        private static DateTime ParseUnixTime(string unixTimeSeconds)
+        {
+            if (!long.TryParse(unixTimeSeconds, out var unixTime))
+                return DateTime.MinValue;
+
+            var dt = DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
+            dt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
+            return dt;
         }
 
         #endregion
