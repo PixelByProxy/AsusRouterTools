@@ -77,5 +77,14 @@ namespace PixelByProxy.Asus.Router.Services
         /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
         /// <returns></returns>
         Task<List<List<string>>> GetDhcpLeaseMacListAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Gets the web history for the specified client, if not client is specified then returns the history for all clients.
+        /// </summary>
+        /// <param name="clientMac">(Optional) If specified gets the web history for this client.</param>
+        /// <param name="page">The page of data to get.</param>
+        /// <param name="cancellationToken">The cancellation token to cancel operation.</param>
+        /// <returns></returns>
+        Task<List<WebHistory>> GetWebHistory(string? clientMac = null, int page = 1, CancellationToken cancellationToken = default);
     }
 }
