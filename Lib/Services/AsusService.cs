@@ -147,12 +147,12 @@ namespace PixelByProxy.Asus.Router.Services
 
             var netDev = response["netdev"]!;
             var sentHex = netDev["INTERNET_tx"]!.ToString();
-            var recievedHex = netDev["INTERNET_rx"]!.ToString();
+            var receivedHex = netDev["INTERNET_rx"]!.ToString();
 
             // convert the hex to int
             var sent = Convert.ToInt64(sentHex.Substring(2), 16) * 8 / 1024 / 1024 / 2;
-            var recieved = Convert.ToInt64(recievedHex.Substring(2), 16) * 8 / 1024 / 1024 / 2;
-            var traffic = new Traffic { Sent = sent, Recieved = recieved };
+            var received = Convert.ToInt64(receivedHex.Substring(2), 16) * 8 / 1024 / 1024 / 2;
+            var traffic = new Traffic { Sent = sent, Received = received };
 
             return traffic;
         }

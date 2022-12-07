@@ -4,6 +4,6 @@
     {
         public long Sent { get; set; }
 
-        public long Recieved { get; set; }
+        public long Received { get; set; }
     }
 }
