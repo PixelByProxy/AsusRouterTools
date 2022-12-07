@@ -30,4 +30,4 @@ jobs:
         run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.NUGET_KEY}} -Source "https://api.nuget.org/v3/index.json" -SkipDuplicate
 
       - name: Github Push Packages
-        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.GITHUB_TOKEN}} -Source "https://nuget.pkg.github.com/OWNER/index.json" -SkipDuplicate
+        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.GITHUB_TOKEN}} -Source "https://nuget.pkg.github.com/PixelByProxy/index.json" -SkipDuplicate
