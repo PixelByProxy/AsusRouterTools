@@ -13,7 +13,7 @@ public class ConfigurationFixture
             .AddUserSecrets<AsusConfigurationSecrets>(false)
             .Build();
 
-        AsusConfiguration = configuration.GetSection(nameof(Router.Configuration.AsusConfiguration)).Get<AsusConfiguration>()!;
+        AsusConfiguration = configuration.GetSection(nameof(AsusConfiguration)).Get<AsusConfiguration>()!;
     }
 
     public HttpClient HttpClient { get; }

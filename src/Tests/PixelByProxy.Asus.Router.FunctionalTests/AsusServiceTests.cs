@@ -14,7 +14,7 @@ public class AsusServiceTests
     }
 
     [Fact]
-    public async Task GetUptimeAsync_ReturnsValuesThatAreNotNull()
+    public async Task GetUptimeAsync_ReturnsPropertiesWithValues()
     {
         // Act
         var uptime = await _asusService.GetUptimeAsync().ConfigureAwait(false);
@@ -23,5 +23,18 @@ public class AsusServiceTests
         uptime.Should().NotBeNull();
         uptime!.Since.Should().NotBeNull();
         uptime.TotalSeconds.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetMemoryUsageAsync_ReturnsPropertiesWithValues()
+    {
+        // Act
+        var usage = await _asusService.GetMemoryUsageAsync().ConfigureAwait(false);
+
+        // Assert
+        usage.Should().NotBeNull();
+        usage!.Total.Should().BeGreaterThan(0);
+        usage.Used.Should().BeGreaterThan(0);
+        usage.Free.Should().BeGreaterThan(0);
     }
 }
