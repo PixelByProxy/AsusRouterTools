@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Lib", "Lib", "{BB4BF3C6-062
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PixelByProxy.Asus.Router", "Lib\PixelByProxy.Asus.Router.csproj", "{B626E7AF-A4E2-4644-9C89-132B27E02637}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C687D2EF-EB92-4D4B-8DFB-EE830B57FE7B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PixelByProxy.Asus.Router.FunctionalTests", "Tests\PixelByProxy.Asus.Router.FunctionalTests\PixelByProxy.Asus.Router.FunctionalTests.csproj", "{FC6B89B6-5C87-40A8-B441-09F39C5E99E7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,12 +21,17 @@ Global
 		{B626E7AF-A4E2-4644-9C89-132B27E02637}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B626E7AF-A4E2-4644-9C89-132B27E02637}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B626E7AF-A4E2-4644-9C89-132B27E02637}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC6B89B6-5C87-40A8-B441-09F39C5E99E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC6B89B6-5C87-40A8-B441-09F39C5E99E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC6B89B6-5C87-40A8-B441-09F39C5E99E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC6B89B6-5C87-40A8-B441-09F39C5E99E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{B626E7AF-A4E2-4644-9C89-132B27E02637} = {BB4BF3C6-062D-4DEA-97CB-924EC6128E0F}
+		{FC6B89B6-5C87-40A8-B441-09F39C5E99E7} = {C687D2EF-EB92-4D4B-8DFB-EE830B57FE7B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {03087ADB-5715-4FCF-972A-F248379C16AE}
