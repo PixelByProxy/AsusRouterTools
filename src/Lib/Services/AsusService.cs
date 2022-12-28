@@ -30,7 +30,7 @@ namespace PixelByProxy.Asus.Router.Services
         private static readonly string[] LanStatusKeys = {
             "lan_hwaddr", "lan_ipaddr", "lan_proto", "lan_netmask", "lan_gateway" };
 
-        private static readonly Regex UptimeRegex = new(@"(""uptime"":(?<Date>.*)\((?<Seconds>[0-9]*).*\))", RegexOptions.Compiled);
+        private static readonly Regex UptimeRegex = new(@"(""uptime"":""(?<Date>.*)\((?<Seconds>[0-9]*).*\))", RegexOptions.Compiled);
         private static readonly Regex WanStatusRegex = new(@"(.*function (?<Name>.*)\(\).*return '?(?<Value>.*[^'])('?;)})", RegexOptions.Compiled);
 
         #endregion
