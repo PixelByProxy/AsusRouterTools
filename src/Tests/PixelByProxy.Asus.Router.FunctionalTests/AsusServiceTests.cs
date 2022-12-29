@@ -37,4 +37,16 @@ public class AsusServiceTests
         usage.Used.Should().BeGreaterThan(0);
         usage.Free.Should().BeGreaterThan(0);
     }
+
+    [Fact]
+    public async Task GetTrafficAsync_ReturnsPropertiesWithValues()
+    {
+        // Act
+        var traffic = await _asusService.GetTrafficAsync().ConfigureAwait(false);
+
+        // Assert
+        traffic.Should().NotBeNull();
+        traffic!.Sent.Should().BeGreaterThan(0);
+        traffic.Received.Should().BeGreaterThan(0);
+    }
 }

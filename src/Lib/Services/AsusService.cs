@@ -3,22 +3,13 @@ using Newtonsoft.Json.Linq;
 using PixelByProxy.Asus.Router.Configuration;
 using PixelByProxy.Asus.Router.Models;
 using PixelByProxy.Asus.Router.Models.Responses;
-using System.Net;
-using System.Net.Mime;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PixelByProxy.Asus.Router.Services
 {
-    /// <inheritdoc />
-    public class AsusService : IAsusService
+    /// <inheritdoc cref="IAsusService" />
+    public class AsusService : ServiceBase, IAsusService
     {
-        #region Constants
-
-        private const string UserAgent = "asusrouter-Android-DUTUtil-1.0.0.245";
-
-        #endregion
-
         #region Static Fields
 
         private static readonly string[] RouterSettingsKeys = {
@@ -35,16 +26,6 @@ namespace PixelByProxy.Asus.Router.Services
 
         #endregion
 
-        #region Fields
-
-        private readonly AsusConfiguration _asusConfig;
-        private readonly HttpClient _httpClient;
-
-        private string? _authToken;
-        private string? _authCreds;
-
-        #endregion
-
         #region Constructors
 
         /// <summary>
@@ -52,11 +33,9 @@ namespace PixelByProxy.Asus.Router.Services
         /// </summary>
         /// <param name="asusConfig">The Asus router configuration settings.</param>
         /// <param name="httpClient">Http Client for communication with the Asus APIs.</param>
-        /// <exception cref="ArgumentNullException"></exception>
         public AsusService(AsusConfiguration asusConfig, HttpClient httpClient)
+            : base(asusConfig, httpClient)
         {
-            _asusConfig = asusConfig ?? throw new ArgumentNullException(nameof(asusConfig));
-            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         }
 
         #endregion
@@ -64,22 +43,9 @@ namespace PixelByProxy.Asus.Router.Services
         #region IAsusService Members
 
         /// <inheritdoc />
-        public async Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
+        public Task<string> GetTokenAsync(CancellationToken cancellationToken = default)
         {
-            try
-            {
-                var creds = $"{_asusConfig.UserName}:{_asusConfig.Password}";
-                var login = Convert.ToBase64String(Encoding.ASCII.GetBytes(creds));
-                var content = $"login_authorization={login}";
-
-                var json = await GetResponseJsonAsync("/login.cgi", HttpMethod.Post, content, false, cancellationToken).ConfigureAwait(false);
-                var token = json["asus_token"]!.ToString();
-                return token;
-            }
-            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.BadRequest)
-            {
-                throw new HttpRequestException("Authentication Failed", ex, HttpStatusCode.Unauthorized);
-            }
+            return GetAuthTokenAsync(cancellationToken);
         }
 
         /// <inheritdoc />
@@ -288,85 +254,6 @@ namespace PixelByProxy.Asus.Router.Services
             }
 
             return webHistory;
-        }
-
-        #endregion
-
-        #region Private Methods
-
-        private async Task<string> AuthenticateAsync(CancellationToken cancellationToken)
-        {
-            var currentCreds = $"{_asusConfig.UserName}:{_asusConfig.Password}";
-
-            if (string.IsNullOrEmpty(_authToken) || !string.Equals(_authCreds, currentCreds, StringComparison.Ordinal))
-            {
-                _authToken = await GetTokenAsync(cancellationToken).ConfigureAwait(false);
-                _authCreds = currentCreds;
-            }
-
-            return _authToken;
-        }
-
-        private async Task<JObject> GetHookResponseJsonAsync(string hook, CancellationToken cancellationToken)
-        {
-            var response = await GetHookResponseAsync(hook, cancellationToken).ConfigureAwait(false);
-            var obj = JsonConvert.DeserializeObject<JObject>(response);
-            return obj!;
-        }
-
-        private async Task<string> GetHookResponseAsync(string hook, CancellationToken cancellationToken)
-        {
-            var response = await GetResponseAsync($"/appGet.cgi?hook={hook}()", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
-            return response;
-        }
-
-        private async Task<JObject> GetResponseJsonAsync(string path, HttpMethod method, string? jsonContent, bool authenticate, CancellationToken cancellationToken)
-        {
-            var response = await GetResponseAsync(path, method, jsonContent, authenticate, cancellationToken).ConfigureAwait(false);
-            var obj = JsonConvert.DeserializeObject<JObject>(response);
-            return obj!;
-        }
-
-        private async Task<string> GetResponseAsync(string path, HttpMethod method, string? jsonContent, bool authenticate, CancellationToken cancellationToken)
-        {
-            var protocol = _asusConfig.UseHttps ? "https" : "http";
-            var requestUri = new Uri($"{protocol}://{_asusConfig.HostName}{path}");
-
-            var request = new HttpRequestMessage(method, requestUri);
-
-            request.Headers.UserAgent.TryParseAdd(UserAgent);
-
-            if (authenticate)
-            {
-                var token = await AuthenticateAsync(cancellationToken).ConfigureAwait(false);
-                request.Headers.Add("Cookie", $"asus_token={token}");
-            }
-
-            if (!string.IsNullOrEmpty(jsonContent))
-                request.Content = new StringContent(jsonContent, Encoding.UTF8, MediaTypeNames.Application.Json);
-
-            var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            if (content.IndexOf("error_status", StringComparison.OrdinalIgnoreCase) > -1)
-            {
-                var errorJson = JsonConvert.DeserializeObject<JObject>(content)!;
-                throw new HttpRequestException($"Error {errorJson["error_status"]}", null, HttpStatusCode.BadRequest);
-            }
-
-            return content;
-        }
-
-        private static DateTime ParseUnixTime(string unixTimeSeconds)
-        {
-            if (!long.TryParse(unixTimeSeconds, out var unixTime))
-                return DateTime.MinValue;
-
-            var dt = DateTimeOffset.FromUnixTimeSeconds(unixTime).DateTime;
-            dt = DateTime.SpecifyKind(dt, DateTimeKind.Utc);
-            return dt;
         }
 
         #endregion
