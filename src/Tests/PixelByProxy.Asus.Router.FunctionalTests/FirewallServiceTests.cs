@@ -54,7 +54,7 @@ public class FirewallServiceTests : IAsyncLifetime
             RemoteIp = "2001::1111:2222:3333/64",
             LocalIp = "2001::1111:2222:3333/64",
             PortRange = "3333:3334",
-            Protocol = "TCP"
+            Protocol = IpV6Protocol.Tcp
         };
 
         currentSettings.IpV6FirewallRules.Add(newRule);
@@ -79,7 +79,7 @@ public class FirewallServiceTests : IAsyncLifetime
         {
             SourceIp = "255.255.255.255",
             PortRange = "3333:3334",
-            Protocol = "TCP"
+            Protocol = IpV4Protocol.Udp
         };
 
         currentSettings.IpV4FirewallRules.Add(newRule);
