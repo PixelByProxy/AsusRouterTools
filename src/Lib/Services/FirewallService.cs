@@ -11,7 +11,7 @@ public class FirewallService : ServiceBase, IFirewallService
 {
     #region Static Fields
 
-    private static readonly Regex IpV6Regex = new(@"(ipv6_fw_rulelist_array = ""(?<IpV6RuleList>.*)"";)", RegexOptions.Compiled);
+    private static readonly Regex FirewallRegex = new(@"<script>[\s\S]+(firewall_enable = '(?<FirewallEnable>.*)';)[\s\S]+(ipv6_fw_rulelist_array = ""(?<IpV6RuleList>.*)"";)[\s\S]+(ipv4_fw_rulelist_array = ""(?<IpV4RuleList>.*)"";)", RegexOptions.Compiled);
 
     #endregion
 
@@ -30,15 +30,19 @@ public class FirewallService : ServiceBase, IFirewallService
     {
         var response = await GetResponseAsync("/Advanced_BasicFirewall_Content.asp", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
 
-        var match = IpV6Regex.Match(response);
+        var match = FirewallRegex.Match(response);
 
         if (!match.Success)
             throw new EntryPointNotFoundException();
 
         var settings = new FirewallSettings();
 
-        var ipv6Rules = match.Groups["IpV6RuleList"].Value;
+        // parse firewall enabled
+        var enabled = match.Groups["FirewallEnable"].Value;
+        settings.Enabled = string.Equals(enabled, "1", StringComparison.Ordinal);
 
+        // parse IPV6 firewall rules
+        var ipv6Rules = match.Groups["IpV6RuleList"].Value;
         if (!string.IsNullOrEmpty(ipv6Rules))
         {
             ipv6Rules = HttpUtility.UrlDecode(ipv6Rules);
@@ -58,6 +62,28 @@ public class FirewallService : ServiceBase, IFirewallService
                 };
 
                 settings.IpV6FirewallRules.Add(rule);
+            }
+        }
+
+        // parse IPV4 firewall rules
+        var ipv4Rules = match.Groups["IpV4RuleList"].Value;
+        if (!string.IsNullOrEmpty(ipv4Rules))
+        {
+            ipv4Rules = HttpUtility.UrlDecode(ipv4Rules);
+            var entries = ipv4Rules.Split('<', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var entry in entries)
+            {
+                var ruleParts = entry.Split('>');
+
+                var rule = new FirewallRuleIpV4
+                {
+                    Protocol = ruleParts.IndexAtOrDefault(0),
+                    SourceIp = ruleParts.IndexAtOrDefault(2),
+                    PortRange = ruleParts.IndexAtOrDefault(5)
+                };
+
+                settings.IpV4FirewallRules.Add(rule);
             }
         }
 
