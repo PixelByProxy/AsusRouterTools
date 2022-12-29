@@ -224,7 +224,7 @@ namespace PixelByProxy.Asus.Router.Services
             if (page <= 0)
                 page = 1;
 
-            var response = await GetResponseAsync($"/getWebHistory.asp?client={clientMac}&page={page}", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
+            var response = await GetResponseAsync($"/getWebHistory.asp?client={clientMac}&page={page}", HttpMethod.Get, null, null, true, cancellationToken).ConfigureAwait(false);
 
             var webHistory = new List<WebHistory>();
 

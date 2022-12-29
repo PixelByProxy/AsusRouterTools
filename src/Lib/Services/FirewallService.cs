@@ -9,6 +9,12 @@ namespace PixelByProxy.Asus.Router.Services;
 /// <inheritdoc cref="IFirewallService" />
 public class FirewallService : ServiceBase, IFirewallService
 {
+    #region Constants
+
+    private const int MaxRules = 128;
+
+    #endregion
+
     #region Static Fields
 
     private static readonly Regex FirewallRegex = new(@"<script>[\s\S]+(firewall_enable = '(?<FirewallEnable>.*)';)[\s\S]+(ipv6_fw_rulelist_array = ""(?<IpV6RuleList>.*)"";)[\s\S]+(ipv4_fw_rulelist_array = ""(?<IpV4RuleList>.*)"";)", RegexOptions.Compiled);
@@ -28,12 +34,12 @@ public class FirewallService : ServiceBase, IFirewallService
     /// <inheritdoc />
     public async Task<FirewallSettings> GetFirewallSettingsAsync(CancellationToken cancellationToken = default)
     {
-        var response = await GetResponseAsync("/Advanced_BasicFirewall_Content.asp", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
+        var response = await GetResponseAsync("/Advanced_BasicFirewall_Content.asp", HttpMethod.Get, null, null, true, cancellationToken).ConfigureAwait(false);
 
         var match = FirewallRegex.Match(response);
 
         if (!match.Success)
-            throw new EntryPointNotFoundException();
+            throw new IndexOutOfRangeException("Unable to match the Firewall settings.");
 
         var settings = new FirewallSettings();
 
@@ -88,5 +94,43 @@ public class FirewallService : ServiceBase, IFirewallService
         }
 
         return settings;
+    }
+
+    /// <inheritdoc />
+    public async Task SetFirewallSettingsAsync(bool? enabled = null, IEnumerable<FirewallRuleIpV6>? ipv6FirewallRules = null, IEnumerable<FirewallRuleIpV4>? ipv4FirewallRules = null, CancellationToken cancellationToken = default)
+    {
+        var settings = new Dictionary<string, string>
+        {
+            { "action_mode", "apply" },
+            { "action_script", "restart_firewall" }
+        };
+
+        if (enabled.HasValue)
+            settings.Add("fw_enable_x", enabled.Value ? "1" : "0");
+
+        if (ipv6FirewallRules != null)
+        {
+            var ruleList = ipv6FirewallRules.ToList();
+
+            // validation
+            if (ruleList.Count > MaxRules)
+                throw new ArgumentException($"The rule list cannot exceed {MaxRules} items.", nameof(ipv6FirewallRules));
+
+            settings.Add("ipv6_fw_rulelist", string.Join(string.Empty, ruleList.Select(rule => rule.Serialize())));
+        }
+
+        if (ipv4FirewallRules != null)
+        {
+            var ruleList = ipv4FirewallRules.ToList();
+
+            // validation
+            if (ruleList.Count > MaxRules)
+                throw new ArgumentException($"The rule list cannot exceed {MaxRules} items.", nameof(ipv4FirewallRules));
+
+            settings.Add("filter_wllist", string.Join(string.Empty, ruleList.Select(rule => rule.Serialize())));
+        }
+
+        await GetResponseAsync("/start_apply.htm", HttpMethod.Post, null, settings, true, cancellationToken)
+            .ConfigureAwait(false);
     }
 }

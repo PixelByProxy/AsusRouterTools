@@ -11,4 +11,9 @@ public class FirewallRuleIpV6
     public string? PortRange { get; set; }
 
     public string? Protocol { get; set; }
+
+    internal string Serialize()
+    {
+        return $"<{ServiceName}>{RemoteIp}>{LocalIp}>{PortRange}>{Protocol}";
+    }
 }

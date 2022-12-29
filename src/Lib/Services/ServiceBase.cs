@@ -86,18 +86,18 @@ public class ServiceBase
 
     protected async Task<string> GetHookResponseAsync(string hook, CancellationToken cancellationToken)
     {
-        var response = await GetResponseAsync($"/appGet.cgi?hook={hook}()", HttpMethod.Get, null, true, cancellationToken).ConfigureAwait(false);
+        var response = await GetResponseAsync($"/appGet.cgi?hook={hook}()", HttpMethod.Get, null, null, true, cancellationToken).ConfigureAwait(false);
         return response;
     }
 
     protected async Task<JObject> GetResponseJsonAsync(string path, HttpMethod method, string? jsonContent, bool authenticate, CancellationToken cancellationToken)
     {
-        var response = await GetResponseAsync(path, method, jsonContent, authenticate, cancellationToken).ConfigureAwait(false);
+        var response = await GetResponseAsync(path, method, jsonContent, null, authenticate, cancellationToken).ConfigureAwait(false);
         var obj = JsonConvert.DeserializeObject<JObject>(response);
         return obj!;
     }
 
-    protected async Task<string> GetResponseAsync(string path, HttpMethod method, string? jsonContent, bool authenticate, CancellationToken cancellationToken)
+    protected async Task<string> GetResponseAsync(string path, HttpMethod method, string? jsonContent, Dictionary<string, string>? formContent, bool authenticate, CancellationToken cancellationToken)
     {
         var protocol = _asusConfig.UseHttps ? "https" : "http";
         var requestUri = new Uri($"{protocol}://{_asusConfig.HostName}{path}");
@@ -114,6 +114,9 @@ public class ServiceBase
 
         if (!string.IsNullOrEmpty(jsonContent))
             request.Content = new StringContent(jsonContent, Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        if (formContent != null && formContent.Any())
+            request.Content = new FormUrlEncodedContent(formContent);
 
         var response = await _httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
