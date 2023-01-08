@@ -13,13 +13,22 @@ var config = new AsusConfiguration
 };
 
 var httpClient = new HttpClient();
-var service = new AsusService(config, httpClient);
-var clients = await service.GetClientsAsync();
+var asusService = new AsusService(config, httpClient);
+var firewallService = new FirewallService(config, httpClient);
 
+var clients = await asusService.GetClientsAsync();
 Console.WriteLine($"Clients: {clients.Count}");
+
+var firewallSettings = await firewallService.GetFirewallSettingsAsync();
+Console.WriteLine($"Firewall Enabled: {firewallSettings.Enabled}");
 ```
 
-## Available Methods
+### Write Access
+
+Note that the write methods will throw an exception unless you set EnableWrite on the AsusConfiguration to true.
+Write access is currently experiemental, use at your own risk.
+
+## AsusService Methods
 ```
 GetTokenAsync            - Gets the authentication token.
 GetUptimeAsync           - Gets the uptime and time of last boot.
@@ -31,7 +40,18 @@ GetWanStatusAsync        - Gets WAN status information.
 GetRouterSettingsAsync   - Gets various router settings.
 GetLanStatusAsync        - Gets LAN status information.
 GetDhcpLeaseMacListAsync - Gets a list of DHCP leases given out.
+GetWebHistory            - Gets the web history for the clients, note this requires QoS to be enabled.
 ```
+
+## FirewallService Methods
+```
+GetFirewallSettingsAsync - Gets the current firewall settings.
+SetFirewallSettingsAsync - Set the firewall settings to the defined values.
+```
+
+## Testing
+
+Last tested on an ASUS RT-AX86U with firmware version 3.0.0.4.388_22068.
 
 ## Credits
 
