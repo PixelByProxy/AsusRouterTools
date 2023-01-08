@@ -4,6 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PixelByProxy.Asus.Router.Configuration;
+using PixelByProxy.Asus.Router.Messages;
 
 namespace PixelByProxy.Asus.Router.Services;
 
@@ -45,6 +46,12 @@ public class ServiceBase
     #endregion
 
     #region Protected Methods
+
+    protected void EnsureWriteAccess()
+    {
+        if (!_asusConfig.EnableWrite)
+            throw new InvalidOperationException(ErrorStrings.EnableWriteAccess);
+    }
 
     protected async Task<string> GetAuthTokenAsync(CancellationToken cancellationToken = default)
     {

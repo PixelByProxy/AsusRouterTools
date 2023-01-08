@@ -3,6 +3,7 @@ using PixelByProxy.Asus.Router.Extensions;
 using PixelByProxy.Asus.Router.Models;
 using System.Text.RegularExpressions;
 using System.Web;
+using PixelByProxy.Asus.Router.Messages;
 
 namespace PixelByProxy.Asus.Router.Services;
 
@@ -99,6 +100,8 @@ public class FirewallService : ServiceBase, IFirewallService
     /// <inheritdoc />
     public async Task SetFirewallSettingsAsync(bool? enabled = null, IEnumerable<FirewallRuleIpV6>? ipv6FirewallRules = null, IEnumerable<FirewallRuleIpV4>? ipv4FirewallRules = null, CancellationToken cancellationToken = default)
     {
+        EnsureWriteAccess();
+
         var settings = new Dictionary<string, string>
         {
             { "action_mode", "apply" },
@@ -114,7 +117,7 @@ public class FirewallService : ServiceBase, IFirewallService
 
             // validation
             if (ruleList.Count > MaxRules)
-                throw new ArgumentException($"The rule list cannot exceed {MaxRules} items.", nameof(ipv6FirewallRules));
+                throw new ArgumentException(ErrorStrings.RulesCannotExceed(MaxRules), nameof(ipv6FirewallRules));
 
             string? errorMessage = null;
             var invalidRule = ruleList.FirstOrDefault(rule => !rule.IsRuleValid(out errorMessage));
@@ -130,12 +133,12 @@ public class FirewallService : ServiceBase, IFirewallService
 
             // validation
             if (ruleList.Count > MaxRules)
-                throw new ArgumentException($"The rule list cannot exceed {MaxRules} items.", nameof(ipv4FirewallRules));
+                throw new ArgumentException(ErrorStrings.RulesCannotExceed(MaxRules), nameof(ipv4FirewallRules));
 
             string? errorMessage = null;
             var invalidRule = ruleList.FirstOrDefault(rule => !rule.IsRuleValid(out errorMessage));
             if (invalidRule != null)
-                throw new ArgumentException(errorMessage, nameof(ipv6FirewallRules));
+                throw new ArgumentException(errorMessage, nameof(ipv4FirewallRules));
 
             settings.Add("filter_wllist", string.Join(string.Empty, ruleList.Select(rule => rule.Serialize())));
         }

@@ -49,4 +49,18 @@ public class AsusServiceTests
         traffic!.Sent.Should().BeGreaterThan(0);
         traffic.Received.Should().BeGreaterThan(0);
     }
+
+    [Fact]
+    public async Task GetClientsAsync_ReturnsListOfClientsWithValues()
+    {
+        // Act
+        var clients = await _asusService.GetClientsAsync().ConfigureAwait(false);
+
+        // Assert
+        clients.Should().NotBeEmpty()
+            .And.AllSatisfy(client =>
+            {
+                client.DisplayName.Should().NotBeNullOrWhiteSpace();
+            });
+    }
 }

@@ -1,70 +1,54 @@
 ﻿using PixelByProxy.Asus.Router.Models;
 using System.Net;
 using System.Text.RegularExpressions;
+using PixelByProxy.Asus.Router.Messages;
 
 namespace PixelByProxy.Asus.Router.Extensions;
 
 internal static class FirewallRuleExtensions
 {
+    internal static readonly char[] InvalidFirewallChars = { '<', '>', '\'', '%' };
+
     private static readonly Regex IpV6CidrRegex = new(@"^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*(\/(\d|\d\d|1[0-1]\d|12[0-8]))$");
     private static readonly Regex IpV6Regex = new(@"^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*");
     private static readonly Regex PortRegex = new(@"^([0-9]{1,5})\:([0-9]{1,5})$", RegexOptions.Compiled);
-    private static readonly char[] InvalidFirewallChars = { '<', '>', '\'', '%' };
 
     public static bool IsRuleValid(this FirewallRuleIpV6 rule, out string? message)
     {
-        if (string.IsNullOrWhiteSpace(rule.LocalIp))
+        if (string.IsNullOrWhiteSpace(rule.LocalIp) || !IpV6Regex.IsMatch(rule.LocalIp))
         {
-            message = $"{nameof(rule.LocalIp)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.LocalIp));
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(rule.PortRange))
         {
-            message = $"{nameof(rule.PortRange)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.PortRange));
             return false;
         }
 
         if (rule.Protocol == IpV6Protocol.Unknown)
         {
-            message = $"A valid {nameof(rule.Protocol)} is required.";
-            return false;
-        }
-
-        if (HasInvalidChar(rule.ServiceName))
-        {
-            message = $"{nameof(rule.ServiceName)} cannot contain these characters '{string.Join(',', InvalidFirewallChars)}'.";
-            return false;
-        }
-
-        if (HasInvalidChar(rule.RemoteIp))
-        {
-            message = $"{nameof(rule.RemoteIp)} cannot contain these characters '{string.Join(',', InvalidFirewallChars)}'.";
-            return false;
-        }
-
-        if (HasInvalidChar(rule.LocalIp))
-        {
-            message = $"{nameof(rule.LocalIp)} cannot contain these characters '{string.Join(',', InvalidFirewallChars)}'.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.Protocol));
             return false;
         }
 
         if (!string.IsNullOrWhiteSpace(rule.RemoteIp) && !IpV6CidrRegex.IsMatch(rule.RemoteIp))
         {
-            message = $"A valid {nameof(rule.RemoteIp)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.RemoteIp));
             return false;
         }
 
-        if (!IpV6Regex.IsMatch(rule.LocalIp))
+        if (HasInvalidChar(rule.ServiceName))
         {
-            message = $"A valid {nameof(rule.LocalIp)} is required.";
+            message = ErrorStrings.PropertyCannotContainCharacters(nameof(rule.ServiceName), InvalidFirewallChars);
             return false;
         }
 
         var port = ParsePort(rule.PortRange);
         if (!port.IsValid)
         {
-            message = $"A valid {nameof(rule.PortRange)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.PortRange));
             return false;
         }
 
@@ -73,13 +57,13 @@ internal static class FirewallRuleExtensions
 
         if (!port.Start.IsInRange(minPort, maxPort) || (port.IsRange && !port.End.IsInRange(minPort, maxPort)))
         {
-            message = $"The port must be between {minPort} and {maxPort}.";
+            message = ErrorStrings.PortBetween(minPort, maxPort);
             return false;
         }
 
         if (port.IsRange && port.End <= port.Start)
         {
-            message = $"The end port ({port.End}) must greater than the start port ({port.Start}).";
+            message = ErrorStrings.EndPortMustBeGreater(port.Start, port.End);
             return false;
         }
 
@@ -89,40 +73,28 @@ internal static class FirewallRuleExtensions
 
     public static bool IsRuleValid(this FirewallRuleIpV4 rule, out string? message)
     {
-        if (string.IsNullOrWhiteSpace(rule.SourceIp))
+        if (string.IsNullOrWhiteSpace(rule.SourceIp) || !IPAddress.TryParse(rule.SourceIp, out _))
         {
-            message = $"{nameof(rule.SourceIp)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.SourceIp));
             return false;
         }
 
         if (string.IsNullOrWhiteSpace(rule.PortRange))
         {
-            message = $"{nameof(rule.PortRange)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.PortRange));
             return false;
         }
 
         if (rule.Protocol == IpV4Protocol.Unknown)
         {
-            message = $"A valid {nameof(rule.Protocol)} is required.";
-            return false;
-        }
-
-        if (HasInvalidChar(rule.SourceIp))
-        {
-            message = $"{nameof(rule.SourceIp)} cannot contain these characters '{string.Join(',', InvalidFirewallChars)}'.";
-            return false;
-        }
-
-        if (!IPAddress.TryParse(rule.SourceIp, out _))
-        {
-            message = $"A valid {nameof(rule.SourceIp)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.Protocol));
             return false;
         }
 
         var port = ParsePort(rule.PortRange);
         if (!port.IsValid)
         {
-            message = $"A valid {nameof(rule.PortRange)} is required.";
+            message = ErrorStrings.ValidPropertyIsRequired(nameof(rule.PortRange));
             return false;
         }
 
@@ -131,13 +103,13 @@ internal static class FirewallRuleExtensions
 
         if (!port.Start.IsInRange(minPort, maxPort) || (port.IsRange && !port.End.IsInRange(minPort, maxPort)))
         {
-            message = $"The port must be between {minPort} and {maxPort}.";
+            message = ErrorStrings.PortBetween(minPort, maxPort);
             return false;
         }
 
         if (port.IsRange && port.End <= port.Start)
         {
-            message = $"The end port ({port.End}) must greater than the start port ({port.Start}).";
+            message = ErrorStrings.EndPortMustBeGreater(port.Start, port.End);
             return false;
         }
 
