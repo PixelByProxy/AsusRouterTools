@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using PixelByProxy.Asus.Router.Models;
 using PixelByProxy.Asus.Router.Services;
 
 namespace PixelByProxy.Asus.Router.FunctionalTests;
@@ -148,7 +147,6 @@ public class AsusServiceTests
         var allHistory = await _asusService.GetWebHistory().ConfigureAwait(false);
 
         var macWithHistory = allHistory.First(h => !string.IsNullOrWhiteSpace(h.Mac)).Mac;
-        macWithHistory.Should().NotBeNullOrEmpty();
 
         // Act
         var history = await _asusService.GetWebHistory(macWithHistory).ConfigureAwait(false);
