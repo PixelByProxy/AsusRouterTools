@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Description>A class to access functionality from your Asus router.</Description>
-    <Copyright>Copyright (c) Pixel by Proxy 2022</Copyright>
+    <Copyright>Copyright (c) Pixel by Proxy 2022-2023</Copyright>
     <PackageProjectUrl>https://github.com/PixelByProxy/AsusRouterTools</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>asus;router</PackageTags>
@@ -15,6 +15,12 @@
     <RepositoryUrl>https://github.com/PixelByProxy/AsusRouterTools</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
+      <_Parameter1>PixelByProxy.Asus.Router.FunctionalTests</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <None Include="..\..\icon.png">
