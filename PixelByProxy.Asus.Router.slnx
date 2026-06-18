@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Lib/">
+    <Project Path="src/Lib/PixelByProxy.Asus.Router.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="src/Tests/PixelByProxy.Asus.Router.FunctionalTests/PixelByProxy.Asus.Router.FunctionalTests.csproj" />
+  </Folder>
+</Solution>
