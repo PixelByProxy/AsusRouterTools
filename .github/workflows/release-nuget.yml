@@ -8,9 +8,19 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # required for nuget.org trusted publishing (OIDC)
+
     steps:
       - uses: actions/checkout@v3
-      
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
       - name: Download Artifact
         uses: bettermarks/action-artifact-download@0.3.0
         with:
@@ -26,8 +36,16 @@ jobs:
       - name: Display Files
         run: ls -R
 
+      # Exchanges the GitHub OIDC token for a short-lived (1 hour) nuget.org API key.
+      # Requires a Trusted Publishing policy on nuget.org for this repo + release-nuget.yml.
+      - name: Nuget.org Login
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: ${{secrets.NUGET_USER}}
+
       - name: Nuget.org Push Packages
-        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.NUGET_KEY}} -Source "https://api.nuget.org/v3/index.json" -SkipDuplicate
+        run: dotnet nuget push "packages/*.nupkg" --api-key ${{steps.nuget-login.outputs.NUGET_API_KEY}} --source "https://api.nuget.org/v3/index.json" --skip-duplicate
 
       - name: Github Push Packages
-        run: nuget push "packages/*.nupkg" -ApiKey ${{secrets.GITHUB_TOKEN}} -Source "https://nuget.pkg.github.com/PixelByProxy/index.json" -SkipDuplicate
+        run: dotnet nuget push "packages/*.nupkg" --api-key ${{secrets.GITHUB_TOKEN}} --source "https://nuget.pkg.github.com/PixelByProxy/index.json" --skip-duplicate
